@@ -3,3 +3,4 @@ python-dotenv
 flask
 supabase
 markdown
+gunicorn
