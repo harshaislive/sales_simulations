@@ -6,7 +6,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24) # Secure session key
+# Production: Use a static key from Env. Dev: Fallback to random.
+app.secret_key = os.environ.get("SECRET_KEY", os.urandom(24))
 
 # Load Data Once on Startup (from Supabase now)
 DEALS = core.load_data()
