@@ -1,0 +1,20 @@
+# Environment & Secrets
+.env
+.venv
+venv/
+__pycache__/
+*.pyc
+
+# Data Files (Never commit these!)
+deals.json
+*.csv
+*.xlsx
+
+# Generated Reports & Artifacts
+reports/
+simulations/
+forecast_results.json
+
+# IDE Settings
+.vscode/
+.idea/

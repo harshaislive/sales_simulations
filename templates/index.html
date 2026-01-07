@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pipeline Intelligence Hub</title>
+    <style>
+        :root {
+            --bg-color: #faf9f6; --text-color: #333; --accent-color: #000;
+            --secondary-text: #666; --font-serif: 'Georgia', serif;
+            --font-sans: -apple-system, system-ui, sans-serif;
+            --success-color: #2e7d32; --neutral-color: #1976d2; --moonshot-color: #9c27b0;
+        }
+        body { background: var(--bg-color); color: var(--text-color); font-family: var(--font-sans); margin: 0; padding: 0; line-height: 1.6; }
+        
+        .container { max-width: 1000px; margin: 0 auto; padding: 4rem 2rem; }
+        
+        header { border-bottom: 2px solid var(--accent-color); padding-bottom: 2rem; margin-bottom: 3rem; }
+        h1 { font-family: var(--font-serif); font-size: 3rem; margin: 0; letter-spacing: -1px; }
+        .subtitle { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; color: var(--secondary-text); margin-top: 1rem; display: block; }
+        
+        /* Control Panel */
+        .controls { background: white; padding: 2rem; border: 1px solid #ddd; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        
+        .form-group label { display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; color: #666; }
+        .form-group select { width: 100%; padding: 0.8rem; border: 1px solid #ccc; font-family: var(--font-sans); font-size: 1rem; border-radius: 4px; }
+        
+        button { background: var(--accent-color); color: white; border: none; padding: 1rem 2rem; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; height: 100%; width: 100%; transition: background 0.2s; }
+        button:hover { background: #333; }
+        
+        /* Results Area */
+        #results-area { display: none; opacity: 0; transition: opacity 0.5s; }
+        .fade-in { opacity: 1 !important; }
+        
+        .meta-header { text-align: center; margin-bottom: 3rem; }
+        .meta-header h2 { font-family: var(--font-serif); font-size: 2.5rem; margin: 0; }
+        .meta-header p { color: #666; margin-top: 0.5rem; font-size: 1.1rem; }
+        
+        .forecast-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-bottom: 4rem; }
+        .card { background: white; padding: 2rem; border-top: 4px solid #ccc; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        
+        .card.conservative { border-color: var(--success-color); }
+        .card.base { border-color: var(--neutral-color); }
+        .card.moon { border-color: var(--moonshot-color); }
+        
+        .card-val { font-family: var(--font-serif); font-size: 2.5rem; font-weight: bold; display: block; margin: 1rem 0; }
+        .card-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .card-desc { font-size: 0.9rem; color: #666; }
+        
+        /* Editorial Section */
+        .editorial { background: white; padding: 3rem; border: 1px solid #eee; margin-bottom: 2rem; }
+        .editorial h3 { margin-top: 0; font-family: var(--font-serif); font-size: 1.8rem; border-bottom: 1px solid #eee; padding-bottom: 1rem; margin-bottom: 1.5rem; }
+        .editorial h4 { text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; color: #666; margin-bottom: 0.5rem; margin-top: 2rem; }
+        .editorial p { color: #444; font-size: 1rem; line-height: 1.7; margin-bottom: 1rem; }
+        .editorial strong { color: #000; font-weight: 700; }
+        
+        /* Data Audit Section */
+        .audit-box { background: #f9f9f9; border: 1px solid #eee; padding: 2rem; font-size: 0.9rem; color: #555; }
+        .audit-header { font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 0.5rem; margin-bottom: 1rem; display: flex; justify-content: space-between; }
+        .audit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; }
+        .audit-item { margin-bottom: 0.5rem; display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 0.25rem; }
+        .audit-val { font-weight: 600; color: #333; font-family: monospace; }
+        
+        .loading { text-align: center; display: none; padding: 4rem; color: #666; font-style: italic; font-family: var(--font-serif); font-size: 1.2rem; }
+        .money { font-feature-settings: "tnum"; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header style="display: flex; justify-content: space-between; align-items: start;">
+        <div>
+            <span class="subtitle">Live Analysis Engine v3.0 (Cloud)</span>
+            <h1>Pipeline Intelligence Hub</h1>
+        </div>
+        <a href="/logout" style="text-decoration: none; color: #666; font-size: 0.9rem; border: 1px solid #ccc; padding: 0.5rem 1rem; border-radius: 4px;">Logout</a>
+    </header>
+
+    <div class="controls">
+        <div class="form-group">
+            <label>Pipeline Scope</label>
+            <select id="pipeline">
+                <option value="all">All Pipelines</option>
+                {% for pid, name in pipelines.items() %}
+                <option value="{{ pid }}">{{ name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Deal Owner</label>
+            <select id="owner">
+                <option value="all">All Agents</option>
+                {% for owner in owners %}
+                <option value="{{ owner }}">{{ owner }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Simulation Model</label>
+            <select id="model">
+                <option value="baseline">Baseline (Historical Avg)</option>
+                <option value="time_decay">Time Decay (Penalize Old)</option>
+                <option value="engagement">Engagement Weighted</option>
+                <option value="owner_performance">Owner Specific</option>
+                <option value="momentum">Recent Momentum (6mo)</option>
+            </select>
+        </div>
+        
+        <div class="form-group" style="display: flex; align-items: end;">
+            <button onclick="runSimulation()">Run Simulation</button>
+        </div>
+    </div>
+    
+    <div id="loading" class="loading">Running 10,000 Monte Carlo Iterations...</div>
+    
+    <div id="results-area">
+        <div class="meta-header">
+            <h2 id="res-title">Global Portfolio Forecast</h2>
+            <p id="res-subtitle">Analyzing Active Deals</p>
+        </div>
+        
+        <div class="forecast-grid">
+            <div class="card conservative">
+                <span class="card-label">Conservative (90%)</span>
+                <span class="card-val money" id="val-cons">₹0</span>
+                <span class="card-desc" style="color: var(--success-color)">Safe Floor</span>
+            </div>
+            <div class="card base">
+                <span class="card-label">Base Case (50%)</span>
+                <span class="card-val money" id="val-base">₹0</span>
+                <span class="card-desc" style="color: var(--neutral-color)">Most Likely</span>
+            </div>
+            <div class="card moon">
+                <span class="card-label">Moonshot (10%)</span>
+                <span class="card-val money" id="val-moon">₹0</span>
+                <span class="card-desc" style="color: var(--moonshot-color)">Best Case</span>
+            </div>
+        </div>
+        
+        <div class="editorial">
+            <h3 id="ed-title">Analysis Deep Dive</h3>
+            <div id="ed-content"></div>
+        </div>
+
+        <div class="audit-box">
+            <div class="audit-header">
+                <span>Data Integrity Audit</span>
+                <span style="color: var(--success-color)">● Verified</span>
+            </div>
+            <div class="audit-grid">
+                <div>
+                    <strong style="display:block; margin-bottom:1rem; color:#000;">Input Data Stream</strong>
+                    <div class="audit-item"><span>Total Database Records:</span> <span class="audit-val" id="aud-total">0</span></div>
+                    <div class="audit-item"><span>Ignored (Closed/Lost):</span> <span class="audit-val" id="aud-status">0</span></div>
+                    <div class="audit-item"><span>Filtered by User:</span> <span class="audit-val" id="aud-filter">0</span></div>
+                    <div class="audit-item" style="border-top:1px solid #ccc; margin-top:0.5rem; padding-top:0.5rem;"><span>Final Active Scope:</span> <span class="audit-val" id="aud-active" style="color:var(--neutral-color);">0</span></div>
+                </div>
+                <div>
+                    <strong style="display:block; margin-bottom:1rem; color:#000;">Training Model Metadata</strong>
+                    <div class="audit-item"><span>Historical Win Rate:</span> <span class="audit-val" id="aud-rate">0%</span></div>
+                    <div class="audit-item"><span>Training Sample Size:</span> <span class="audit-val" id="aud-sample">0 deals</span></div>
+                    <div class="audit-item"><span>Date Range:</span> <span class="audit-val" id="aud-dates">N/A</span></div>
+                    <p style="font-size: 0.8rem; margin-top: 1rem; line-height: 1.4;">
+                        The model learned from <strong><span id="aud-sample-inline">0</span></strong> historical closed deals from <strong><span id="aud-dates-inline">N/A</span></strong> to calculate the probabilities used in this simulation.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const editorials = {
+        "baseline": `
+            <h4>The Philosophy</h4>
+            <p><strong>"History repeats itself."</strong> The Baseline model is the industry standard for financial forecasting. It assumes that your team's future performance will mirror its long-term historical average.</p>
+            <h4>The Logic</h4>
+            <p>If your team has historically converted <strong>12%</strong> of deals in the 'Negotiation' stage, this simulation gives every current 'Negotiation' deal exactly a 12% chance of winning. It does not judge the quality or age of the deal.</p>
+            <h4>Strategic Use</h4>
+            <p>Use this number for <strong>Finance & Budgeting</strong>. It removes emotion and recency bias, providing a stable, mathematically grounded number for long-term planning.</p>
+        `,
+        "time_decay": `
+            <h4>The Philosophy</h4>
+            <p><strong>"Time kills all deals."</strong> A deal that has been sitting in the same stage for 6 months is not the same as a fresh deal that arrived yesterday, even if they are in the same stage. Most forecasts ignore this; this model punishes it.</p>
+            <h4>The Logic</h4>
+            <p>We calculated your median sales cycle (approx 90 days). In this simulation, any deal older than <strong>90 days</strong> receives a <strong>50% penalty</strong> to its win probability. Any deal older than <strong>180 days</strong> receives an <strong>80% penalty</strong>.</p>
+            <h4>Strategic Use</h4>
+            <p>Use this to <strong>Clear Pipeline Bloat</strong>. If your Baseline forecast is ₹100M but your Time Decay forecast is ₹40M, you have ₹60M of "Zombie Revenue" that your team is falsely relying on.</p>
+        `,
+        "engagement": `
+            <h4>The Philosophy</h4>
+            <p><strong>"Sales is a contact sport."</strong> Interest is measured in activity. A quiet deal is usually a lost deal.</p>
+            <h4>The Logic</h4>
+            <p>This model scans the activity logs (emails, calls, notes). Deals with <strong>>5 interactions</strong> receive a <strong>1.5x probability boost</strong> (rewarding effort). Deals with <strong>Zero interactions</strong> receive a <strong>50% penalty</strong>.</p>
+            <h4>Strategic Use</h4>
+            <p>Use this to forecast based on <strong>Effort</strong>. It highlights the deals your team is actually working on, rather than the ones they are just hoping for.</p>
+        `,
+        "owner_performance": `
+            <h4>The Philosophy</h4>
+            <p><strong>"Not all salespeople are created equal."</strong> A deal in the hands of a top performer is worth more than the same deal in the hands of a rookie.</p>
+            <h4>The Logic</h4>
+            <p>Instead of using the company-wide average win rate, this simulation applies the <strong>specific historical win rate</strong> of the deal owner. (e.g., If Rakesh closes 20% and Vivekanand closes 2%, their deals are weighted accordingly).</p>
+            <h4>Strategic Use</h4>
+            <p>Use this for <strong>Quota Setting & Performance Review</strong>. It provides the most realistic view of what your current team roster is capable of delivering.</p>
+        `,
+        "momentum": `
+            <h4>The Philosophy</h4>
+            <p><strong>"What have you done lately?"</strong> Markets shift, products change, and teams evolve. Data from 2 years ago may be irrelevant today.</p>
+            <h4>The Logic</h4>
+            <p>This simulation strictly filters the training data to the <strong>last 180 days</strong>. It ignores all historical wins/losses older than 6 months.</p>
+            <h4>Strategic Use</h4>
+            <p>Use this during <strong>Market Shifts</strong> or after pricing changes. It tells you your current velocity, not your historical legacy.</p>
+        `
+    };
+
+    async function runSimulation() {
+        document.getElementById('results-area').style.display = 'none';
+        document.getElementById('loading').style.display = 'block';
+        
+        const payload = {
+            pipeline_id: document.getElementById('pipeline').value,
+            owner_name: document.getElementById('owner').value,
+            model_type: document.getElementById('model').value
+        };
+        
+        try {
+            const response = await fetch('/run_sim', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            
+            if (data.error) {
+                alert(data.error);
+                document.getElementById('loading').style.display = 'none';
+                return;
+            }
+            updateUI(data);
+        } catch (e) {
+            console.error(e);
+            alert("Simulation failed.");
+        }
+        
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('results-area').style.display = 'block';
+        setTimeout(() => document.getElementById('results-area').classList.add('fade-in'), 50);
+    }
+    
+    function formatMoney(amount) {
+        return "₹" + amount.toLocaleString('en-IN', {maximumFractionDigits: 0});
+    }
+    
+    function updateUI(data) {
+        const res = data.results;
+        const meta = data.meta;
+        const audit = res.audit;
+        
+        // Header
+        document.getElementById('res-title').innerText = `${meta.pipeline} Forecast`;
+        let subText = `Analyzing ${res.count} Active Deals`;
+        if (meta.owner !== "All Agents") subText += ` owned by ${meta.owner}`;
+        subText += ` using ${meta.model} Model`;
+        document.getElementById('res-subtitle').innerText = subText;
+        
+        // Cards
+        document.getElementById('val-cons').innerText = formatMoney(res.conservative);
+        document.getElementById('val-base').innerText = formatMoney(res.base);
+        document.getElementById('val-moon').innerText = formatMoney(res.moonshot);
+        
+        // Editorial Content
+        const modelKey = document.getElementById('model').value;
+        const modelTitle = document.getElementById('model').options[document.getElementById('model').selectedIndex].text;
+        document.getElementById('ed-title').innerText = `Deep Dive: ${modelTitle}`;
+        document.getElementById('ed-content').innerHTML = editorials[modelKey];
+        
+        // Audit
+        document.getElementById('aud-total').innerText = audit.total_db_records.toLocaleString();
+        document.getElementById('aud-status').innerText = audit.ignored_closed.toLocaleString();
+        document.getElementById('aud-filter').innerText = audit.filtered_by_user.toLocaleString();
+        document.getElementById('aud-active').innerText = res.count.toLocaleString();
+        
+        document.getElementById('aud-rate').innerText = (audit.global_win_rate * 100).toFixed(2) + "%";
+        document.getElementById('aud-sample').innerText = audit.training_count.toLocaleString();
+        document.getElementById('aud-dates').innerText = audit.date_range;
+        document.getElementById('aud-sample-inline').innerText = audit.training_count.toLocaleString();
+        document.getElementById('aud-dates-inline').innerText = audit.date_range;
+    }
+</script>
+
+</body>
+</html>
