@@ -23,9 +23,10 @@ TEAM_PASSWORD = os.environ.get("TEAM_PASSWORD", "admin")
 def login():
     if request.method == 'POST':
         pwd = request.form.get('password')
+        next_url = request.args.get('next')
         if pwd == TEAM_PASSWORD:
             session['logged_in'] = True
-            return redirect(url_for('index'))
+            return redirect(next_url or url_for('index'))
         else:
             return render_template('login.html', error="Invalid Password")
     return render_template('login.html')
@@ -52,7 +53,7 @@ def prospect_simulation():
 @app.route('/velocity-report')
 def velocity_report():
     if not session.get('logged_in'):
-        return redirect(url_for('login'))
+        return redirect(url_for('login', next=request.url))
     try:
         with open('reports/won_deals_velocity_report.html', 'r', encoding='utf-8') as f:
             return f.read()
