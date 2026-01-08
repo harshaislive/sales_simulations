@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Won Deal Velocity Report</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.5; color: #333; max-width: 1200px; margin: 40px auto; padding: 0 20px; background: #f9f9f9; }
+        h1 { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 5px; }
+        .header-meta { color: #666; font-size: 0.95rem; margin-bottom: 40px; }
+        h2 { margin-top: 40px; border-bottom: 1px solid #ccc; padding-bottom: 5px; font-size: 1.5rem; }
+        
+        .summary-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 30px 0; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center; border-top: 4px solid #000; }
+        .card .val { font-size: 2.5rem; font-weight: bold; display: block; }
+        .card .label { text-transform: uppercase; font-size: 0.8rem; color: #666; letter-spacing: 1px; }
+        
+        .cohort-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 15px; margin-bottom: 40px; }
+        .cohort-box { background: #fff; padding: 15px; border-radius: 6px; text-align: center; border: 1px solid #ddd; }
+        .cohort-box .count { font-size: 2rem; font-weight: bold; color: #000; display: block; }
+        .cohort-box .title { font-size: 0.9rem; font-weight: 600; margin-bottom: 5px; display: block; }
+        .cohort-box .pct { font-size: 0.8rem; color: #666; }
+        .cohort-box.skipped { background: #fff0f0; border-color: #ffd0d0; }
+
+        .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; background: white; min-width: 800px; }
+        th { background: #f4f4f4; text-align: left; padding: 12px; font-size: 0.85rem; text-transform: uppercase; color: #666; white-space: nowrap; }
+        td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: top; }
+        .days-val { font-weight: bold; font-size: 1.1rem; }
+        .stage-list { margin: 0; padding: 0; list-style: none; font-size: 0.85rem; color: #555; }
+        .stage-date { color: #999; width: 85px; display: inline-block; }
+        .stage-dur { font-weight: 600; color: #333; }
+        small { color: #888; }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            body { padding: 0 15px; margin: 20px auto; }
+            h1 { font-size: 1.8rem; }
+            .header-meta { font-size: 0.85rem; }
+            
+            .summary-cards { grid-template-columns: 1fr; gap: 15px; }
+            .card .val { font-size: 2rem; }
+            
+            .cohort-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .cohort-box { padding: 10px; }
+            .cohort-box .count { font-size: 1.5rem; }
+            
+            th, td { padding: 10px; font-size: 0.9rem; }
+            .days-val { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Won Deal Velocity: Prospect to Win</h1>
+        <div class="header-meta">
+            <strong>Data Range:</strong> 19 Nov 2023 - 11 Nov 2025 &bull; 
+            <strong>Analysis Date:</strong> 08 Jan 2026
+        </div>
+    </header>
+
+    <div class="summary-cards">
+        <div class="card">
+            <span class="val">31</span>
+            <span class="label">Total Won Deals</span>
+        </div>
+        <div class="card">
+            <span class="val">128.1</span>
+            <span class="label">Avg Days (Prospect to Win)</span>
+        </div>
+        <div class="card">
+            <span class="val">22</span>
+            <span class="label">Analyzed Velocity</span>
+        </div>
+    </div>
+
+    <h2>Velocity Breakdown</h2>
+    <p style="color: #666; margin-bottom: 20px;">Count of deals won within specific time ranges from becoming a prospect. (Total: 31)</p>
+    <div class="cohort-grid">
+        <div class="cohort-box">
+            <span class="title">0 - 3 Months</span>
+            <span class="count">13</span>
+            <span class="pct">41.9%</span>
+        </div>
+        <div class="cohort-box">
+            <span class="title">3 - 6 Months</span>
+            <span class="count">5</span>
+            <span class="pct">16.1%</span>
+        </div>
+        <div class="cohort-box">
+            <span class="title">6 - 9 Months</span>
+            <span class="count">1</span>
+            <span class="pct">3.2%</span>
+        </div>
+        <div class="cohort-box">
+            <span class="title">9 - 12 Months</span>
+            <span class="count">2</span>
+            <span class="pct">6.5%</span>
+        </div>
+         <div class="cohort-box" style="background: #fafafa;">
+            <span class="title">Over 12 Months</span>
+            <span class="count">1</span>
+            <span class="pct">3.2%</span>
+        </div>
+        <div class="cohort-box skipped">
+            <span class="title">No Prospect Phase</span>
+            <span class="count">9</span>
+            <span class="pct">29.0%</span>
+        </div>
+    </div>
+    <p style="font-size: 0.95rem; color: #555; background: #fff0f0; padding: 15px; border-left: 4px solid #ffd0d0; border-radius: 4px;">
+        <strong>Note:</strong> Deals in the "No Prospect Phase" category skipped the standard prospecting stages (likely created directly in late stages like MOU or Closed). 
+        These are identified as <strong>"Direct Entry"</strong> in the table below, as they technically had a 0-day prospecting cycle.
+    </p>
+
+    <h2>Detailed Deal History</h2>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Deal & Owner</th>
+                    <th>Prospect Entry</th>
+                    <th>Won Date</th>
+                    <th>Days (P&rarr;W)</th>
+                    <th>Full Stage Journey</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td><strong>Deepak Prabhaker</strong><br><small>Bala</small></td>
+            <td>2024-02-02</td>
+            <td>2024-10-17</td>
+            <td class="days-val">258.3</td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Feb 02, 2024</span>: Prospects (Follow-Up) <span class='stage-dur'>(242.0d)</span></li><li><span class='stage-date'>Oct 01, 2024</span>: MOU Awaits <span class='stage-dur'>(16.2d)</span></li><li><span class='stage-date'>Oct 17, 2024</span>: Closed-Won/Lost <span class='stage-dur'>(40.8d)</span></li><li><span class='stage-date'>Nov 27, 2024</span>: Onboarded <span class='stage-dur'>(Final)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>aneesh reddy deal</strong><br><small>Beforest Admin</small></td>
+            <td>2024-02-26</td>
+            <td>2024-03-04</td>
+            <td class="days-val">6.8</td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Feb 26, 2024</span>: 9 <span class='stage-dur'>(0.2d)</span></li><li><span class='stage-date'>Feb 26, 2024</span>: Lead In <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Feb 26, 2024</span>: Initial Event Scheduled <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Feb 26, 2024</span>: Event Attended <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Feb 26, 2024</span>: Prospects (Follow-Up) <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Feb 26, 2024</span>: Booking Payment Awaits <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Feb 26, 2024</span>: MOU Awaits <span class='stage-dur'>(6.7d)</span></li><li><span class='stage-date'>Mar 04, 2024</span>: Onboarded <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Mar 04, 2024</span>: MOU Awaits <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Mar 04, 2024</span>: Onboarded <span class='stage-dur'>(Final)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Neeraja</strong><br><small>Sai Rakesh</small></td>
+            <td><span style='color:#999'>Direct Entry</span></td>
+            <td>2024-07-31</td>
+            <td class="days-val"><span style='color:#ccc'>-</span></td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Mar 20, 2024</span>: Onboarded <span class='stage-dur'>(132.9d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Krishna Teja</strong><br><small>Bala</small></td>
+            <td>2024-04-15</td>
+            <td>2024-05-21</td>
+            <td class="days-val">36.1</td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Apr 15, 2024</span>: 9 <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Apr 15, 2024</span>: Booking Payment Awaits <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Apr 15, 2024</span>: Event Attended <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Apr 15, 2024</span>: Booking Payment Awaits <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Apr 15, 2024</span>: Closed-Won/Lost <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Apr 15, 2024</span>: Booking Payment Awaits <span class='stage-dur'>(1.0d)</span></li><li><span class='stage-date'>Apr 16, 2024</span>: MOU Awaits <span class='stage-dur'>(112.8d)</span></li><li><span class='stage-date'>Aug 07, 2024</span>: Onboarded <span class='stage-dur'>(Final)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Virendra Jain</strong><br><small>Sourav Dutta</small></td>
+            <td><span style='color:#999'>Direct Entry</span></td>
+            <td>2024-07-18</td>
+            <td class="days-val"><span style='color:#ccc'>-</span></td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Jun 25, 2024</span>: MOU Awaits <span class='stage-dur'>(23.0d)</span></li><li><span class='stage-date'>Jul 18, 2024</span>: Closed (Won/Lost) <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Jul 18, 2024</span>: Onboarded <span class='stage-dur'>(0.0d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Sailesh Ramaswamy</strong><br><small>Sourav Dutta</small></td>
+            <td>2023-02-25</td>
+            <td>2024-08-07</td>
+            <td class="days-val">528.9</td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Feb 25, 2023</span>: Prospects(Follow-Up) <span class='stage-dur'>(486.9d)</span></li><li><span class='stage-date'>Jun 26, 2024</span>: MOU Awaits <span class='stage-dur'>(42.0d)</span></li><li><span class='stage-date'>Aug 07, 2024</span>: Onboarded <span class='stage-dur'>(0.0d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Saswata Chakravarty</strong><br><small>Bala</small></td>
+            <td>2024-08-02</td>
+            <td>2024-08-15</td>
+            <td class="days-val">13.5</td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Apr 09, 2024</span>: Initial Event Scheduled <span class='stage-dur'>(114.8d)</span></li><li><span class='stage-date'>Aug 02, 2024</span>: Event Attended <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Aug 02, 2024</span>: Prospects(Follow-Up) <span class='stage-dur'>(0.5d)</span></li><li><span class='stage-date'>Aug 02, 2024</span>: Booking Payment Awaits <span class='stage-dur'>(2.8d)</span></li><li><span class='stage-date'>Aug 05, 2024</span>: MOU Awaits <span class='stage-dur'>(7.7d)</span></li><li><span class='stage-date'>Aug 13, 2024</span>: Closed (Won/Lost) <span class='stage-dur'>(2.5d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>GEETHA PILLAI</strong><br><small>Bala</small></td>
+            <td><span style='color:#999'>Direct Entry</span></td>
+            <td>2024-07-12</td>
+            <td class="days-val"><span style='color:#ccc'>-</span></td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>May 01, 2023</span>: Closed (Won/Lost) <span class='stage-dur'>(437.7d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Moonmoon Basu</strong><br><small>Bala</small></td>
+            <td><span style='color:#999'>Direct Entry</span></td>
+            <td>2024-07-12</td>
+            <td class="days-val"><span style='color:#ccc'>-</span></td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Aug 21, 2023</span>: Closed (Won/Lost) <span class='stage-dur'>(326.3d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Vinay Bale</strong><br><small>Bala</small></td>
+            <td><span style='color:#999'>Direct Entry</span></td>
+            <td>2023-11-19</td>
+            <td class="days-val"><span style='color:#ccc'>-</span></td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Sep 27, 2023</span>: Closed (Won/Lost) <span class='stage-dur'>(52.8d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Ankur</strong><br><small>Bala</small></td>
+            <td><span style='color:#999'>Direct Entry</span></td>
+            <td>2024-07-12</td>
+            <td class="days-val"><span style='color:#ccc'>-</span></td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>May 24, 2023</span>: Closed (Won/Lost) <span class='stage-dur'>(414.6d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Vinayak</strong><br><small>Bala</small></td>
+            <td>2023-08-17</td>
+            <td>2024-08-05</td>
+            <td class="days-val">353.6</td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Aug 17, 2023</span>: Lead In <span class='stage-dur'>(353.6d)</span></li><li><span class='stage-date'>Aug 05, 2024</span>: Closed (Won/Lost) <span class='stage-dur'>(0.0d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Sandeep Davu</strong><br><small>Bala</small></td>
+            <td>2023-09-26</td>
+            <td>2024-08-03</td>
+            <td class="days-val">311.9</td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Sep 26, 2023</span>: Lead In <span class='stage-dur'>(311.9d)</span></li><li><span class='stage-date'>Aug 03, 2024</span>: Closed (Won/Lost) <span class='stage-dur'>(0.0d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Vinuta</strong><br><small>Bala</small></td>
+            <td>2024-04-01</td>
+            <td>2024-08-20</td>
+            <td class="days-val">140.8</td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Apr 01, 2024</span>: Legacy Lead In <span class='stage-dur'>(120.2d)</span></li><li><span class='stage-date'>Jul 30, 2024</span>: MOU Awaits <span class='stage-dur'>(20.6d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Sahithi Krishna</strong><br><small>Bala</small></td>
+            <td>2024-01-23</td>
+            <td>2024-07-18</td>
+            <td class="days-val">176.8</td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Jan 23, 2024</span>: Legacy Lead In <span class='stage-dur'>(169.0d)</span></li><li><span class='stage-date'>Jul 10, 2024</span>: MOU Awaits <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Jul 10, 2024</span>: Closed (Won/Lost) <span class='stage-dur'>(7.8d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Sushant Madan</strong><br><small>Bala</small></td>
+            <td>2024-08-02</td>
+            <td>2024-11-29</td>
+            <td class="days-val">119.4</td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Jun 26, 2024</span>: Lead In <span class='stage-dur'>(36.6d)</span></li><li><span class='stage-date'>Aug 02, 2024</span>: Event Attended <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Aug 02, 2024</span>: Prospects(Follow-Up) <span class='stage-dur'>(65.5d)</span></li><li><span class='stage-date'>Oct 06, 2024</span>: Booking Payment Awaits <span class='stage-dur'>(19.7d)</span></li><li><span class='stage-date'>Oct 26, 2024</span>: MOU Awaits <span class='stage-dur'>(34.2d)</span></li><li><span class='stage-date'>Nov 29, 2024</span>: Closed (Won/Lost) <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Nov 29, 2024</span>: Onboarded <span class='stage-dur'>(Final)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Rohit Bhat</strong><br><small>Bala</small></td>
+            <td>2024-07-30</td>
+            <td>2024-10-28</td>
+            <td class="days-val">89.6</td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Jul 30, 2024</span>: Legacy Lead In <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Jul 30, 2024</span>: Booking Payment Awaits <span class='stage-dur'>(62.9d)</span></li><li><span class='stage-date'>Oct 01, 2024</span>: MOU Awaits <span class='stage-dur'>(14.9d)</span></li><li><span class='stage-date'>Oct 16, 2024</span>: Closed (Won/Lost) <span class='stage-dur'>(11.8d)</span></li><li><span class='stage-date'>Oct 28, 2024</span>: Onboarded <span class='stage-dur'>(0.0d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Dr. Surekha</strong><br><small>Bala</small></td>
+            <td>2024-12-26</td>
+            <td>2025-04-09</td>
+            <td class="days-val">104.0</td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Aug 01, 2024</span>: Event Attended <span class='stage-dur'>(127.1d)</span></li><li><span class='stage-date'>Dec 06, 2024</span>: Prospects (Follow-Up) <span class='stage-dur'>(20.0d)</span></li><li><span class='stage-date'>Dec 26, 2024</span>: Lead In <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Dec 26, 2024</span>: Event Attended <span class='stage-dur'>(Final)</span></li><li><span class='stage-date'>Dec 26, 2024</span>: Initial Event Scheduled <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Dec 26, 2024</span>: Prospects(Follow-Up) <span class='stage-dur'>(75.8d)</span></li><li><span class='stage-date'>Mar 12, 2025</span>: MOU Awaits <span class='stage-dur'>(28.3d)</span></li><li><span class='stage-date'>Apr 09, 2025</span>: Onboarded <span class='stage-dur'>(0.0d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Akshay</strong><br><small>Sai Rakesh</small></td>
+            <td>2024-08-10</td>
+            <td>2024-10-17</td>
+            <td class="days-val">67.9</td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Aug 10, 2024</span>: Prospects (Follow-Up) <span class='stage-dur'>(58.0d)</span></li><li><span class='stage-date'>Oct 07, 2024</span>: MOU Awaits <span class='stage-dur'>(9.9d)</span></li><li><span class='stage-date'>Oct 17, 2024</span>: Closed-Won/Lost <span class='stage-dur'>(Final)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Divya</strong><br><small>Bala</small></td>
+            <td>2024-09-25</td>
+            <td>2024-11-18</td>
+            <td class="days-val">53.9</td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Sep 02, 2024</span>: Lead In <span class='stage-dur'>(0.7d)</span></li><li><span class='stage-date'>Sep 03, 2024</span>: Initial Event Scheduled <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Sep 03, 2024</span>: Event Attended <span class='stage-dur'>(22.2d)</span></li><li><span class='stage-date'>Sep 25, 2024</span>: Prospects (Follow-Up) <span class='stage-dur'>(6.1d)</span></li><li><span class='stage-date'>Oct 01, 2024</span>: Booking Payment Awaits <span class='stage-dur'>(17.0d)</span></li><li><span class='stage-date'>Oct 18, 2024</span>: MOU Awaits <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Oct 18, 2024</span>: Closed-Won/Lost <span class='stage-dur'>(39.7d)</span></li><li><span class='stage-date'>Nov 27, 2024</span>: Onboarded <span class='stage-dur'>(Final)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Devang shah</strong><br><small>Sai Rakesh</small></td>
+            <td>2025-04-29</td>
+            <td>2025-06-23</td>
+            <td class="days-val">55.2</td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Sep 29, 2024</span>: Lead In <span class='stage-dur'>(0.3d)</span></li><li><span class='stage-date'>Sep 29, 2024</span>: Prospects (Follow-Up) <span class='stage-dur'>(211.8d)</span></li><li><span class='stage-date'>Apr 29, 2025</span>: Lead In <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Apr 29, 2025</span>: Prospects(Follow-Up) <span class='stage-dur'>(13.2d)</span></li><li><span class='stage-date'>May 12, 2025</span>: MOU Awaits <span class='stage-dur'>(42.1d)</span></li><li><span class='stage-date'>Jun 23, 2025</span>: Closed (Won/Lost) <span class='stage-dur'>(0.0d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Amit Deshmukh deal</strong><br><small>Bala</small></td>
+            <td>2024-10-01</td>
+            <td>2024-12-17</td>
+            <td class="days-val">76.8</td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Oct 01, 2024</span>: Lead In <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Oct 01, 2024</span>: Initial Event Scheduled <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Oct 01, 2024</span>: Event Attended <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Oct 01, 2024</span>: Prospects (Follow-Up) <span class='stage-dur'>(5.1d)</span></li><li><span class='stage-date'>Oct 06, 2024</span>: Booking Payment Awaits <span class='stage-dur'>(3.8d)</span></li><li><span class='stage-date'>Oct 10, 2024</span>: MOU Awaits <span class='stage-dur'>(67.8d)</span></li><li><span class='stage-date'>Dec 17, 2024</span>: Closed-Won/Lost <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Dec 17, 2024</span>: Onboarded <span class='stage-dur'>(0.0d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Jayendran Dwarka</strong><br><small>Bala</small></td>
+            <td><span style='color:#999'>Direct Entry</span></td>
+            <td>2024-10-17</td>
+            <td class="days-val"><span style='color:#ccc'>-</span></td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Oct 17, 2024</span>: Closed (Won/Lost) <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Oct 17, 2024</span>: Onboarded <span class='stage-dur'>(0.0d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Dr Sandhyarani</strong><br><small>Bala</small></td>
+            <td>2025-02-22</td>
+            <td>2025-04-10</td>
+            <td class="days-val">46.8</td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Feb 22, 2025</span>: Lead In <span class='stage-dur'>(0.7d)</span></li><li><span class='stage-date'>Feb 23, 2025</span>: Event Attended <span class='stage-dur'>(16.9d)</span></li><li><span class='stage-date'>Mar 12, 2025</span>: MOU Awaits <span class='stage-dur'>(29.1d)</span></li><li><span class='stage-date'>Apr 10, 2025</span>: Onboarded <span class='stage-dur'>(Final)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Nicole Lobo</strong><br><small>Bala</small></td>
+            <td>2025-04-30</td>
+            <td>2025-06-16</td>
+            <td class="days-val">46.8</td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Mar 06, 2025</span>: Lead In <span class='stage-dur'>(2.1d)</span></li><li><span class='stage-date'>Mar 08, 2025</span>: Event Attended <span class='stage-dur'>(52.9d)</span></li><li><span class='stage-date'>Apr 30, 2025</span>: Event Attended <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Apr 30, 2025</span>: Prospects(Follow-Up) <span class='stage-dur'>(10.6d)</span></li><li><span class='stage-date'>May 11, 2025</span>: Booking Payment Awaits <span class='stage-dur'>(1.4d)</span></li><li><span class='stage-date'>May 12, 2025</span>: MOU Awaits <span class='stage-dur'>(34.7d)</span></li><li><span class='stage-date'>Jun 16, 2025</span>: Closed (Won/Lost) <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Jun 16, 2025</span>: Onboarded <span class='stage-dur'>(0.0d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Neha Mudaliar</strong><br><small>Bala</small></td>
+            <td>2025-04-18</td>
+            <td>2025-06-19</td>
+            <td class="days-val">61.6</td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Mar 12, 2025</span>: Lead In <span class='stage-dur'>(0.5d)</span></li><li><span class='stage-date'>Mar 13, 2025</span>: Event Attended <span class='stage-dur'>(36.4d)</span></li><li><span class='stage-date'>Apr 18, 2025</span>: Prospects(Follow-Up) <span class='stage-dur'>(16.4d)</span></li><li><span class='stage-date'>May 05, 2025</span>: Booking Payment Awaits <span class='stage-dur'>(1.2d)</span></li><li><span class='stage-date'>May 06, 2025</span>: MOU Awaits <span class='stage-dur'>(44.1d)</span></li><li><span class='stage-date'>Jun 19, 2025</span>: Onboarded <span class='stage-dur'>(0.0d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Aashish</strong><br><small>Sai Rakesh</small></td>
+            <td>2025-04-29</td>
+            <td>2025-06-23</td>
+            <td class="days-val">55.2</td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Mar 26, 2025</span>: Lead In <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Mar 26, 2025</span>: Prospects (Follow-Up) <span class='stage-dur'>(34.0d)</span></li><li><span class='stage-date'>Apr 29, 2025</span>: Lead In <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>Apr 29, 2025</span>: Prospects(Follow-Up) <span class='stage-dur'>(13.2d)</span></li><li><span class='stage-date'>May 12, 2025</span>: MOU Awaits <span class='stage-dur'>(42.1d)</span></li><li><span class='stage-date'>Jun 23, 2025</span>: Closed (Won/Lost) <span class='stage-dur'>(0.0d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Arun Krishnan</strong><br><small>Bala</small></td>
+            <td><span style='color:#999'>Direct Entry</span></td>
+            <td>2025-07-22</td>
+            <td class="days-val"><span style='color:#ccc'>-</span></td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>May 05, 2025</span>: MOU Awaits <span class='stage-dur'>(78.4d)</span></li><li><span class='stage-date'>Jul 22, 2025</span>: Onboarded <span class='stage-dur'>(0.0d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Veejay deal</strong><br><small>Sai Rakesh</small></td>
+            <td><span style='color:#999'>Direct Entry</span></td>
+            <td>2025-06-23</td>
+            <td class="days-val"><span style='color:#ccc'>-</span></td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>May 12, 2025</span>: MOU Awaits <span class='stage-dur'>(41.9d)</span></li><li><span class='stage-date'>Jun 23, 2025</span>: Closed (Won/Lost) <span class='stage-dur'>(0.0d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Vikas  deal ref</strong><br><small>Sai Rakesh</small></td>
+            <td>2025-05-29</td>
+            <td>2025-11-11</td>
+            <td class="days-val">165.8</td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>May 19, 2025</span>: Lead In <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>May 19, 2025</span>: Initial Event Scheduled <span class='stage-dur'>(10.0d)</span></li><li><span class='stage-date'>May 29, 2025</span>: Event Attended <span class='stage-dur'>(0.0d)</span></li><li><span class='stage-date'>May 29, 2025</span>: Prospects (Follow-Up) <span class='stage-dur'>(102.7d)</span></li><li><span class='stage-date'>Sep 09, 2025</span>: Booking Payment Awaits <span class='stage-dur'>(21.2d)</span></li><li><span class='stage-date'>Sep 30, 2025</span>: MOU Awaits <span class='stage-dur'>(41.9d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+        <tr>
+            <td><strong>Meghu</strong><br><small>Sai Rakesh</small></td>
+            <td>2025-06-23</td>
+            <td>2025-08-11</td>
+            <td class="days-val">49.4</td>
+            <td>
+                <ul class="stage-list">
+                    <li><span class='stage-date'>Jun 23, 2025</span>: Prospects(Follow-Up) <span class='stage-dur'>(14.7d)</span></li><li><span class='stage-date'>Jul 08, 2025</span>: MOU Awaits <span class='stage-dur'>(34.8d)</span></li><li><span class='stage-date'>Aug 11, 2025</span>: Closed (Won/Lost) <span class='stage-dur'>(0.0d)</span></li>
+                </ul>
+            </td>
+        </tr>
+        
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
