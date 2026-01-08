@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 from supabase import create_client
 from dotenv import load_dotenv
+import requests
 
 load_dotenv()
 
@@ -56,6 +57,197 @@ def load_pipelines():
         with open('pipelines.json', 'r', encoding='utf-8') as f:
             return json.load(f)
     except: return {}
+
+def _coerce_int(value):
+    try:
+        if value is None: return None
+        return int(value)
+    except:
+        return None
+
+def load_stage_metadata(deals):
+    """
+    Returns a dict of stage_id -> metadata with name, pipeline_id, and order_nr.
+    Prefers Supabase->stages, then stages.json, fellbacks to observed deals.
+    """
+    stage_rows = []
+    supabase = get_supabase()
+    if supabase:
+        try:
+            resp = supabase.table("stages").select("*").execute()
+            stage_rows = resp.data or []
+        except Exception as e:
+            print(f"Error fetching stages from Supabase: {e}")
+    
+    if not stage_rows:
+        try:
+            with open('stages.json', 'r', encoding='utf-8') as f:
+                stage_rows = json.load(f)
+        except FileNotFoundError:
+            stage_rows = []
+        except Exception as e:
+            print(f"Error reading stages.json: {e}")
+            stage_rows = []
+    
+    if not stage_rows:
+        stage_rows = fetch_stages_from_pipedrive()
+        if stage_rows:
+            cache_stage_rows(stage_rows)
+
+    if isinstance(stage_rows, dict):
+        if 'data' in stage_rows and isinstance(stage_rows['data'], list):
+            stage_rows = stage_rows['data']
+        else:
+            stage_rows = [{"id": k, "name": v} for k, v in stage_rows.items()]
+    
+    metadata = {}
+    for row in stage_rows:
+        sid = row.get('id') or row.get('stage_id')
+        if sid is None: continue
+        sid_str = str(sid)
+        pid = row.get('pipeline_id')
+        pid_str = str(pid) if pid is not None else None
+        order_val = None
+        for key in ('order_nr', 'order', 'order_no', 'index', 'sequence'):
+            val = _coerce_int(row.get(key))
+            if val is not None:
+                order_val = val
+                break
+        name = row.get('name') or row.get('label') or row.get('display_name') or f"Stage {sid}"
+        metadata[sid_str] = {
+            "id": sid_str,
+            "name": name,
+            "pipeline_id": pid_str,
+            "order": order_val
+        }
+    
+    if not metadata:
+        # Fall back to inferring from deals
+        for d in deals:
+            sid = d.get('stage_id')
+            if sid is None: continue
+            sid_str = str(sid)
+            if sid_str in metadata: continue
+            pid = d.get('pipeline_id')
+            metadata[sid_str] = {
+                "id": sid_str,
+                "name": f"Stage {sid}",
+                "pipeline_id": str(pid) if pid is not None else None,
+                "order": _coerce_int(d.get('stage_order_nr'))
+            }
+    # Ensure every entry has a display label
+    for sid, data in metadata.items():
+        order_val = data.get('order')
+        label = data.get('name') or f"Stage {sid}"
+        if order_val is not None:
+            label = f"{order_val}. {label}"
+        data['label'] = label
+    return metadata
+
+def fetch_stages_from_pipedrive():
+    token = os.environ.get("PIPEDRIVE_API_TOKEN")
+    if not token:
+        return []
+    base_url = os.environ.get("PIPEDRIVE_STAGE_URL", "https://api.pipedrive.com/v1/stages")
+    params = {"api_token": token}
+    try:
+        resp = requests.get(base_url, params=params, timeout=15)
+        resp.raise_for_status()
+        data = resp.json()
+        return data.get('data') or []
+    except Exception as e:
+        print(f"Error fetching stages from Pipedrive: {e}")
+        return []
+
+def cache_stage_rows(rows):
+    try:
+        with open('stages.json', 'w', encoding='utf-8') as f:
+            json.dump(rows, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"Error caching stages.json: {e}")
+
+def build_stage_filters(deals, pipelines):
+    """
+    Returns (stage_lookup, stage_groups_for_ui)
+    """
+    stage_lookup = load_stage_metadata(deals)
+    pipeline_names = {str(k): v for k, v in pipelines.items()}
+    grouped = defaultdict(list)
+    
+    for sid, data in stage_lookup.items():
+        pid = data.get('pipeline_id') or "unmapped"
+        display_name = data.get('name') or f"Stage {sid}"
+        order_val = data.get('order')
+        grouped[pid].append({
+            "id": sid,
+            "name": display_name,
+            "label": data.get('label') or display_name,
+            "order": order_val
+        })
+    
+    stage_groups = []
+    for pid, items in grouped.items():
+        items.sort(key=lambda x: (x['order'] is None, x['order'] if x['order'] is not None else 0, x['name']))
+        pipeline_label = pipeline_names.get(str(pid))
+        if not pipeline_label:
+            if pid == "unmapped":
+                pipeline_label = "Unmapped Pipeline"
+            else:
+                pipeline_label = f"Pipeline {pid}"
+        stage_groups.append({
+            "pipeline_id": str(pid),
+            "pipeline_name": pipeline_label,
+            "stages": items
+        })
+    
+    stage_groups.sort(key=lambda g: g['pipeline_name'])
+    return stage_lookup, stage_groups
+
+def identify_prospect_stage_ids(stage_lookup, deals=None, default_threshold=1):
+    """
+    Returns set of stage_ids (as strings) that should be treated as Prospect stages.
+    Uses order <= threshold when available.
+    """
+    prospect_ids = set()
+    for sid, data in stage_lookup.items():
+        order_val = data.get('order')
+        if order_val is not None and order_val <= default_threshold:
+            prospect_ids.add(sid)
+    # Fallback: if no order-based matches, take the three lowest-order stages.
+    if not prospect_ids and stage_lookup:
+        sorted_stages = sorted(
+            stage_lookup.items(),
+            key=lambda item: (
+                item[1].get('order') is None,
+                item[1].get('order') if item[1].get('order') is not None else 0
+            )
+        )
+        for sid, _ in sorted_stages[:3]:
+            prospect_ids.add(sid)
+    if deals:
+        for d in deals:
+            order = d.get('stage_order_nr')
+            if order is not None and order <= default_threshold:
+                sid = d.get('stage_id')
+                if sid is not None:
+                    prospect_ids.add(str(sid))
+    return prospect_ids
+
+def collect_win_durations(all_deals):
+    durations = []
+    for d in all_deals:
+        if d.get('status') == 'won' and d.get('add_time') and d.get('won_time'):
+            start = parse_date(d.get('add_time'))
+            end = parse_date(d.get('won_time'))
+            if start and end:
+                durations.append((end - start).days)
+    return durations
+
+def estimate_median_cycle(all_deals, default=90):
+    durations = collect_win_durations(all_deals)
+    if durations:
+        return statistics.median(durations)
+    return default
 
 # --- HELPER UTILS ---
 def parse_date(date_str):
@@ -183,14 +375,7 @@ def run_simulation(active_deals, model_type, all_history_deals):
     iterations = 10000
     
     # Prepare Data
-    median_cycle = 90 # Default
-    won_durations = []
-    for d in all_history_deals:
-        if d['status'] == 'won' and d.get('add_time') and d.get('won_time'):
-            s = parse_date(d['add_time'])
-            e = parse_date(d['won_time'])
-            if s and e: won_durations.append((e-s).days)
-    if won_durations: median_cycle = statistics.median(won_durations)
+    median_cycle = estimate_median_cycle(all_history_deals)
     
     # Calculate Rates
     is_momentum = (model_type == "momentum")
